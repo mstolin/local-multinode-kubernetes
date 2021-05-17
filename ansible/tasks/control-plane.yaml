@@ -1,0 +1,37 @@
+- name: Initialize the Kubernetes cluster using kubeadm
+  command: kubeadm init --apiserver-advertise-address="{{ ansible_host }}" --apiserver-cert-extra-sans="{{ ansible_host }}" --node-name {{ ansible_hostname }} --pod-network-cidr={{ pod_network_cidr }}
+  tags:
+    - k8s-init
+
+- name: Create .kube directory for ansible user
+  become: no
+  file:
+    path: /home/{{ ansible_user }}/.kube
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: u=rwx,g=rw,o=rw
+    state: directory
+
+- name: Copy admin.conf file to users kube directory
+  copy:
+    remote_src: yes
+    src: /etc/kubernetes/admin.conf
+    dest: /home/{{ ansible_user }}/.kube/config
+    owner: "{{ ansible_user }}"
+    mode: u=rw,g=r,o=r
+
+- name: Install calico pod network plugin
+  become: false
+  command: kubectl create -f https://docs.projectcalico.org/manifests/calico.yaml
+
+- name: Generate join command
+  command: kubeadm token create --print-join-command
+  register: join_command
+  tags:
+    - k8s-join
+
+- name: Save join command to a local file
+  become: no
+  local_action: copy content="{{ join_command.stdout_lines[0] }}" dest="./.join_cluster"
+  tags:
+    - k8s-join
