@@ -1,0 +1,12 @@
+- name: Add the join command to the nodes
+  copy:
+    src: ./.join_cluster
+    dest: /tmp/join_cluster.sh
+    mode: 0777
+  tags:
+    - k8s-join
+
+- name: Join the cluster
+  command: sh /tmp/join_cluster.sh
+  tags:
+    - k8s-join
