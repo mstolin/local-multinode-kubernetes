@@ -1,0 +1,12 @@
+### Vagrant ###
+# General
+.vagrant/
+
+# Log files
+*.log
+
+### Vagrant Patch ###
+*.box
+
+### Other ###
+.join_cluster
