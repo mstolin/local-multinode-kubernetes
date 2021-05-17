@@ -1,0 +1,31 @@
+- name: Add signing key for Kubernetes
+  apt_key:
+    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    state: present
+
+- name: Add Kubernetes repository
+  apt_repository:
+    repo: deb https://apt.kubernetes.io/ {{ kubernetes_release_name }} main
+    state: present
+    filename: kubernetes.list
+
+- name: Install Kubernetes packages
+  package:
+    name:
+      - kubeadm
+      - kubectl
+      - kubelet
+    update_cache: yes
+    state: present
+
+- name: Configure host IP of node
+  lineinfile:
+    path: /etc/default/kubelet
+    line: KUBELET_EXTRA_ARGS=--node-ip={{ ansible_host }}
+    create: yes
+    state: present
+
+- name: Restart kubelet service
+  service:
+    name: kubelet
+    state: restarted

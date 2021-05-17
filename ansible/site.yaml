@@ -1,0 +1,70 @@
+---
+- hosts: all
+  become: yes
+  tasks:
+    - name: Install Docker
+      include_tasks: tasks/docker.yaml
+
+    - name: Disable and remove swap
+      include_tasks: tasks/swap.yaml
+
+    - name: Install Kubernetes
+      include_tasks: tasks/kubernetes.yaml
+
+
+- hosts: control-plane
+  become: yes
+  tasks:
+    - name: Initialize the Kubernetes cluster using kubeadm
+      command: kubeadm init --apiserver-advertise-address="{{ ansible_host }}" --apiserver-cert-extra-sans="{{ ansible_host }}" --node-name {{ ansible_hostname }} --pod-network-cidr={{ pod_network_cidr }}
+      tags:
+        - k8s-init
+
+    - name: Create .kube directory for ansible user
+      become: no
+      file:
+        path: /home/{{ ansible_user }}/.kube
+        owner: "{{ ansible_user }}"
+        group: "{{ ansible_user }}"
+        mode: u=rwx,g=rw,o=rw
+        state: directory
+
+    - name: Copy admin.conf file to users kube directory
+      copy:
+        remote_src: yes
+        src: /etc/kubernetes/admin.conf
+        dest: /home/{{ ansible_user }}/.kube/config
+        owner: "{{ ansible_user }}"
+        mode: u=rw,g=r,o=r
+
+    - name: Install calico pod network plugin
+      become: false
+      command: kubectl create -f https://docs.projectcalico.org/manifests/calico.yaml
+
+    - name: Generate join command
+      command: kubeadm token create --print-join-command
+      register: join_command
+      tags:
+        - k8s-join
+
+    - name: Save join command to a local file
+      become: no
+      local_action: copy content="{{ join_command.stdout_lines[0] }}" dest="./.join_cluster"
+      tags:
+        - k8s-join
+
+- hosts: nodes
+  become: yes
+  tasks:
+    - name: Add the join command to the nodes
+      copy:
+        src: ./.join_cluster
+        dest: /tmp/join_cluster.sh
+        mode: 0777
+      tags:
+        - k8s-join
+
+    - name: Join the cluster
+      command: sh /tmp/join_cluster.sh
+      tags:
+        - k8s-join

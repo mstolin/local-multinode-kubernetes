@@ -1,0 +1,13 @@
+[control-plane]
+192.168.80.10
+
+[nodes]
+192.168.80.[11:12]
+
+[all:vars]
+ansible_ssh_user=vagrant
+ansible_ssh_private_key_file=/Users/marcel/.vagrant.d/insecure_private_key
+kubernetes_release_name=kubernetes-xenial
+
+[control-plane:vars]
+pod_network_cidr="192.168.0.0/16"
