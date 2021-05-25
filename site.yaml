@@ -1,0 +1,29 @@
+---
+- hosts: all
+  become: yes
+  vars:
+    kubernetes_release_name: kubernetes-xenial
+  tasks:
+    - name: Install Docker
+      include_tasks: tasks/docker.yaml
+
+    - name: Disable and remove swap
+      include_tasks: tasks/swap.yaml
+
+    - name: Install Kubernetes
+      include_tasks: tasks/kubernetes.yaml
+
+
+- hosts: control
+  become: yes
+  vars:
+    pod_network_cidr: "192.168.0.0/16"
+  tasks:
+    - name: Setup control-plane node
+      include_tasks: tasks/control-plane.yaml
+
+- hosts: worker
+  become: yes
+  tasks:
+    - name: Setup worker nodes
+      include_tasks: tasks/worker.yaml
