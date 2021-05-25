@@ -24,7 +24,10 @@
 
 - name: Update apt and install docker-ce package
   package:
-    name: docker-ce
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
     update_cache: yes
     state: present
 
@@ -34,7 +37,7 @@
     groups: docker
     append: yes
 
-- name: Install Python Docker module
-  pip:
-    name:
-      - docker
+#- name: Install Python Docker module
+#  pip:
+#    name:
+#      - docker
