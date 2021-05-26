@@ -26,8 +26,8 @@ Vagrant.configure("2") do |config|
             machine.vm.network "private_network", ip: node[:ip]
             machine.vm.hostname = node[:name]
 
-            if node_idx == NUMBER_OF_NODES - 1
-                machine.vm.provision "ansible" do |ansible|
+            #if node_idx == NUMBER_OF_NODES - 1
+                #machine.vm.provision "ansible" do |ansible|
                     #ansible.groups = {
                     #    "control" => ["control-plane"],
                     #    "worker" => ["worker-1", "worker-2"],#["worker-[1:#{NUMBER_OF_WORKER}]"]
@@ -44,12 +44,12 @@ Vagrant.configure("2") do |config|
                     #        "ansible_host" => "192.168.80.12"
                     #    }
                     #}
-                    ansible.inventory_path = "hosts.dev"
-                    ansible.config_file = "ansible.dev.cfg"
-                    ansible.playbook = "site.yaml"
-                    ansible.limit = ["all", "control", "worker"]
-                end
-            end
+                    #ansible.inventory_path = "hosts.dev"
+                    #ansible.config_file = "ansible.dev.cfg"
+                    #ansible.playbook = "site.yaml"
+                    #ansible.limit = ["all", "control", "worker"]
+                #end
+            #end
         end
     end
 end
