@@ -26,7 +26,7 @@ Vagrant.configure("2") do |config|
             if node_idx == NUMBER_OF_NODES - 1
                 machine.vm.provision "ansible" do |ansible|
                     ansible.inventory_path = "hosts.dev"
-                    ansible.config_file = "ansible.dev.cfg"
+                    ansible.config_file = "ansible.cfg.dev"
                     ansible.playbook = "site.yaml"
                     ansible.limit = ["all", "control", "worker"]
                 end
